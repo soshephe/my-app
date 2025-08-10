@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="style.css">
+    <link href='https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css' rel='stylesheet'>
+    <title>login</title>
+</head>
+<body>
+    <div class="wrapper">
+    <form id="login-form" action="">
+            <h1>Login</h1>
+            <div class="input-box">
+                <input type="text" id="username" placeholder="Username" required>
+                <i class='bx bxs-lock-alt'></i>
+            </div>
+            <div class="input-box">
+                <input type="password" id="password" placeholder="Password" required>
+                <i class='bx bxs-lock-alt'></i>
+                <span id="toggle-login-password" style="position:absolute; right:45px; top:50%; transform:translateY(-50%); cursor:pointer; color:white; font-size:18px;">👁️</span>
+            </div>
+            <div class="remember-forgot">
+                <label><input type="checkbox">remember me</label>
+                <a href="#">forgot password?</a>
+            </div>
+            <button type="submit" class="btn">Login</button>
+            <div class="register-link">
+                <p>Don't have an account?</p>
+            </div>
+        </form>
+        <form id="register-form" action="" style="margin-top:20px;">
+            <h1>Create Account</h1>
+            <div class="input-box">
+                <input type="text" id="new-username" placeholder="New Username" value="lubanyana" required>
+                <i class='bx bxs-user'></i>
+            </div>
+            <div class="input-box">
+                <input type="password" id="new-password" placeholder="New Password" value="majoka" required>
+                <i class='bx bxs-lock-alt'></i>
+                <span id="toggle-register-password" style="position:absolute; right:45px; top:50%; transform:translateY(-50%); cursor:pointer; color:white; font-size:18px;">👁️</span>
+            </div>
+            <div id="password-strength" style="margin-top:5px; color:white; font-size:13px;"></div>
+            </div>
+            <button type="submit" class="btn">Register</button>
+        </form>
+        <div id="welcome" style="display:none; text-align:center; color:white; margin-top:30px;">
+            <h2 id="welcome-msg"></h2>
+            <button id="logout-btn" class="btn" style="width:auto;">Logout</button>
+        </div>
+    </div>
+    <script>
+    // Show/hide password toggle
+    document.getElementById('toggle-login-password').onclick = function() {
+        const pwd = document.getElementById('password');
+        pwd.type = pwd.type === 'password' ? 'text' : 'password';
+    };
+    document.getElementById('toggle-register-password').onclick = function() {
+        const pwd = document.getElementById('new-password');
+        pwd.type = pwd.type === 'password' ? 'text' : 'password';
+    };
+
+    // Password strength meter for registration
+    document.getElementById('new-password').addEventListener('input', function() {
+        const val = this.value;
+        let strength = '';
+        if (val.length < 6) strength = 'Weak';
+        else if (/^(?=.*[A-Z])(?=.*[0-9])(?=.*[a-z]).{6,}$/.test(val)) strength = 'Strong';
+        else strength = 'Medium';
+        document.getElementById('password-strength').textContent = 'Password strength: ' + strength;
+    });
+    // Store registered users in localStorage for persistence
+    function getUsers() {
+        return JSON.parse(localStorage.getItem('users') || '{}');
+    }
+    function setUsers(users) {
+        localStorage.setItem('users', JSON.stringify(users));
+    }
+    function setLoggedInUser(username) {
+        localStorage.setItem('loggedInUser', username);
+    }
+    function getLoggedInUser() {
+        return localStorage.getItem('loggedInUser');
+    }
+    function logout() {
+        localStorage.removeItem('loggedInUser');
+        document.getElementById('welcome').style.display = 'none';
+        document.getElementById('login-form').style.display = '';
+        document.getElementById('register-form').style.display = '';
+    }
+    document.getElementById('register-form').addEventListener('submit', function(e) {
+        e.preventDefault();
+        const newUsername = document.getElementById('new-username').value;
+        const newPassword = document.getElementById('new-password').value;
+        const users = getUsers();
+        if (users[newUsername]) {
+            alert('Username already exists!');
+        } else {
+            users[newUsername] = newPassword;
+            setUsers(users);
+            alert('Account created! You can now log in.');
+            document.getElementById('register-form').reset();
+            // Pre-fill login form with new credentials
+            document.getElementById('username').value = newUsername;
+            document.getElementById('password').value = newPassword;
+        }
+    });
+    document.getElementById('login-form').addEventListener('submit', function(e) {
+        e.preventDefault();
+        const username = document.getElementById('username').value;
+        const password = document.getElementById('password').value;
+        const users = getUsers();
+        if (users[username] && users[username] === password) {
+            setLoggedInUser(username);
+            document.getElementById('welcome-msg').textContent = 'Welcome, ' + username + '!';
+            document.getElementById('welcome').style.display = 'block';
+            document.getElementById('login-form').style.display = 'none';
+            document.getElementById('register-form').style.display = 'none';
+        } else {
+            alert('Login failed. Please check your username and password or create an account.');
+        }
+    });
+    document.getElementById('logout-btn').addEventListener('click', function() {
+        logout();
+    });
+    // Auto-login if user is already logged in
+    window.onload = function() {
+        const loggedInUser = getLoggedInUser();
+        if (loggedInUser) {
+            document.getElementById('welcome-msg').textContent = 'Welcome, ' + loggedInUser + '!';
+            document.getElementById('welcome').style.display = 'block';
+            document.getElementById('login-form').style.display = 'none';
+            document.getElementById('register-form').style.display = 'none';
+        }
+    };
+    </script>
+</body>
+</html>
